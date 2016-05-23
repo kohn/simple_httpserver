@@ -6,13 +6,17 @@ int main(int argc, char *argv[])
 {
     HttpServer server(9000, 4);
 
+    // normal use
     server.add_resource("/index", [](Request &request, Response &response, Connection &connection){
+	    // write html code to response
             response.content = "this is a test page";
 	    return true;
         });
 
+    // download large file
     server.add_resource("/largefile", [](Request &request, Response &response, Connection &connection){
-	    connection.write_staticfile("/Users/kohn/am_data/db.sqlite3", "db.sqlite3");
+	    // call write_staticfile("path_to_file", "filename";
+	    connection.write_staticfile("main.cpp", "main.cpp");
             return false;
         });
     

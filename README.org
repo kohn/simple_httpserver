@@ -1,5 +1,6 @@
 * simple_httpserver
-A simple httpserver suppurts large file download.
+A simple httpserver suppurts large file download, written in C++11
+with boost asio.
 
 * example
 See main.cpp

@@ -1,6 +1,11 @@
 * simple_httpserver
-A simple httpserver suppurts large file download, written in C++11
-with boost asio.
+A simple httpserver written in C++11 with boost asio.
+
+** Features
+
+1. support large file download.
+2. only 200/404 status code implemented.
+3. asyncronous io.
 
 * example
 See main.cpp

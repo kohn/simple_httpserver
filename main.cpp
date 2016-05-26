@@ -1,5 +1,6 @@
 #include "httpserver.hpp"
-
+#include <regex>
+using namespace std;
 using namespace httpserver;
 
 int main(int argc, char *argv[])
@@ -12,6 +13,14 @@ int main(int argc, char *argv[])
             response.content = "this is a test page";
 	    return true;
         });
+
+    // regex
+    server.add_resource("/regex/([0-9]+)", [](Request &request, Response &response, Connection &connection){
+	    ssub_match base_sub_match = request.base_match[1];
+            response.content = base_sub_match.str();
+	    return true;
+        });
+
 
     // download large file
     server.add_resource("/largefile", [](Request &request, Response &response, Connection &connection){

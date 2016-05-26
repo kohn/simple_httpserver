@@ -14,7 +14,7 @@
 #include <sstream>
 #include <memory>
 #include <fstream>
-#include <chrono>
+#include <regex>
 
 #define LOG() std::cout << __FILE__ << ":" << __LINE__ << std::endl
 
@@ -52,6 +52,7 @@ namespace httpserver{
         std::string method;
         std::string path;
         std::string http_version;
+	std::smatch base_match;
         
         void parse_headers(){
             std::string line;
@@ -135,23 +136,30 @@ namespace httpserver{
         Response response_;
 
 	void process_request(const res_type &resources){
-	    auto iter = resources.find(request_.path);
 	    bool need_write = true;
-	    if(iter == resources.end()){
-		response_.status = NOT_FOUND;
-		std::cout << "404 request: " << request_.path << std::endl;
-	    } else{
-		need_write = iter->second(request_, response_, *this);
+
+	    for(const auto &i : resources){
+		std::regex reg(i.first);
+		std::smatch match;
+		if(std::regex_match(request_.path, match, reg)){
+		    request_.base_match = match;
+		    need_write = i.second(request_, response_, *this);
+		    if(need_write)
+			do_write();
+		    return;
+		}
 	    }
-	    if(need_write)
-		do_write();
+	    response_.status = NOT_FOUND;
+	    response_.content = "Page Not Found";
+	    std::cout << "404 request: " << request_.path << std::endl;
+	    do_write();
 	}
 
         void handler_read_request(const boost::system::error_code& e,
                                   std::size_t size,
                                   res_type &resources){
             if(e){
-                std::cerr << __FUNCTION__ << e.message() << std::endl;
+                std::cerr << __FUNCTION__ << ": " << e.message() << std::endl;
                 return;
             }
             request_.parse_headers();
@@ -168,6 +176,7 @@ namespace httpserver{
                     content_length = stoull(iter->second);
                 }
                 catch(const std::exception &e) {
+		    std::cerr << "parse content-length failed: " << iter->second << std::endl;
                     return;
                 }
                 if(content_length > bytes_remain) {
